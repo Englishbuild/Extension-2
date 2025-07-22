@@ -1,0 +1,65 @@
+{
+  "background": {
+    "service_worker": "js/background.js"
+  },
+  "action": {
+    "default_icon": "icons/icon_inactive.png",
+    "default_popup": "html/popup.html",
+    "default_title": "Video Downloader Plus"
+  },
+  "content_scripts": [
+    {
+      "all_frames": true,
+      "js": [
+        "js/jquery-3.1.1.min.js",
+        "js/common.js",
+        "js/contentscript.js"
+      ],
+      "matches": [
+        "*://*/*"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "19": "icons/19.png",
+    "38": "icons/38.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "manifest_version": 3,
+  "permissions": [
+    "tabs",
+    "webRequest",
+    "declarativeNetRequest",
+    "cookies",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "update_url": "https://clients2.google.com/service/update2/crx",
+  "name": "__MSG_name__",
+  "short_name": "__MSG_name__",
+  "description": "__MSG_desc__",
+  "default_locale": "en_US",
+  "version": "3.0.1",
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "*"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ],
+  "options_ui": {
+    "page": "html/options.html",
+    "open_in_tab": true
+  }
+}

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Video Downloader Options</title>
+
+  <link href="../css/bootstrap.min.css" rel="stylesheet">
+  <link href="../css/options.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="main">
+    <div class="section">
+      <div class="section-title">Video Downloader Preferences</div>
+      <div class="section-content">
+
+        <div class="section-option horizontal ">
+          <div class="action-area">
+            <div class="container main-container">
+              <div class="row">
+                <div class="col-md-12">
+
+                  <label>Video Type: </label>
+                  <div class="form-group">
+
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="type_mp4" class="video_type" value=".mp4" />
+                      MP4
+                    </label>
+
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="type_flv" class="video_type" value=".flv" />
+                      FLV
+                    </label>
+
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="type_mov" class="video_type" value=".mov" />
+                      MOV
+                    </label>
+
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="type_webm" class="video_type" value=".webm" />
+                      WEBM
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="type_3gp" class="video_type" value=".3gp" />
+                      3GP
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="type_ogg" class="video_type" value=".ogg" />
+                      OGG
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="type_bin" class="video_type" value=".bin" />
+                      BIN
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="type_m4a" class="video_type" value=".m4a" />
+                      M4A
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="type_mp3" class="video_type" value=".mp3" disabled />
+                      MP3
+                    </label>
+                    <label class="checkbox-inline">
+                      <input type="checkbox" id="type_wav" class="video_type" value=".wav" />
+                      WAV
+                    </label>
+                  </div>
+                  <!--<label>Video Resolutions: </label>
+                            <div class="form-group">
+
+                                <label class="checkbox-inline">
+                                        <input type="checkbox" id="res_360" class="video_resolutions" value="360p" />
+                                        360p
+                                    </label>
+                                <label class="checkbox-inline">
+                                        <input type="checkbox" id="res_720" class="video_resolutions" value="720p" />
+                                        720p
+                                    </label>
+                                <label class="checkbox-inline">
+                                        <input type="checkbox" id="res_540" class="video_resolutions" value="540p" />
+                                        540p
+                                    </label>
+                                <label class="checkbox-inline">
+                                        <input type="checkbox" id="res_1080" class="video_resolutions" value="1080p" />
+                                        1080p
+                                    </label>
+
+                            </div>-->
+                  <label>Trigger if video more than: </label>
+                  <div class="form-group" id="min-video-sizes">
+
+                  </div>
+
+                  <div class="form-group divUsechromecast">
+                    <label class="checkbox-inline"><input type="checkbox" id="chromcast" value="1"> Use
+                      Chrome Cast </label>
+                  </div>
+
+
+                  <div class="form-group">
+                    <button id="save" type="button" class="btn btn-primary">Save</button>
+                    <button id="logout" type="button" class="btn btn-danger" style="display: none">
+                      Logout
+                    </button>
+                    <div id="status"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="more"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript" src="../js/jquery-3.1.1.min.js"></script>
+  <script src="../js/common.js"></script>
+  <script src="../js/options.js"></script>
+</body>
+
+</html>

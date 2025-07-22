@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Video downloader professional</title>
+  <link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="../css/font-awesome.css">
+  <link rel="stylesheet" type="text/css" href="../css/popup.css">
+  <script type="text/javascript" src="../js/jquery-3.1.1.min.js"></script>
+  <script type="text/javascript" src="../js/md5.min.js"></script>
+  <script type="text/javascript" src="../js/common.js"></script>
+  <script type="text/javascript" src="../js/popup.js"></script>
+  <style>
+    /*.upgrade, .myaccount{
+            font-weight: bold;
+            color:#00aced;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+        }*/
+    .fa {
+      font-size: 16px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="container">
+    <div id="bookmark-video" style="display: none">
+      <div class="bookmark-icon"><i class="fa fa-bookmark"></i> <img id="loading2" src="../images/loading.gif" style="display: none"></div>
+      <div> <a href="#" class="btn-save-video">Save this video for later</a></div>
+      <div class="my-list"><a class="my-list-a" href="#" target="_blank">My list</a></div>
+    </div>
+    <div id="loading"><img src="../images/loading.gif"></div>
+    <div id="no-video-found" style="display: none">No videos found. </div>
+    <ul id="video-list">
+    </ul>
+    <p style="clear: both; font-weight: bold; font-size: 14px; margin: 2px 0px 15px;" class="clearfix text-center">
+      <a href="#" class="myaccount" style="color:#333333e8; text-decoration: none; margin:0 10px; display: none"> <span class="fa   fa-user" aria-hidden="true"></span> Account</a>
+      <a href="#" class="upgrade" style="color:#333333e8; text-decoration: none;  margin:0 10px; display: none"> <span class="fa fa-arrow-circle-o-up" aria-hidden="true"></span> <span class="btn-label"></span></a>
+      <a href="#" id="go-to-options" style="color:#333333e8; text-decoration: none;  margin:0 10px;"> <span class="fa fa-cog" aria-hidden="true"></span> Settings </a>
+    </p>
+  </div>
+</body>
+<script type="text/javascript" src="../js/bootstrap.min.js"></script>
+
+</html>
