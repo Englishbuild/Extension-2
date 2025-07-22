@@ -11,16 +11,12 @@ vd.sendMessage = function(message, callback) {
 vd.videoLinks = [];
 
 vd.getChromeCastButton = function(videoData) {
-  // console.log(videoData);
   return '<a href="' + (videoData.streaming_url ? videoData.streaming_url : videoData.url) + '" data-thumb="' + (videoData.thumbnail || videoData.thumb) + '" data-title="' + (videoData.fileName || videoData.title) + '" data-href="' + (videoData.url || videoData.streaming_url) + '" class="cast-button" data-file-name="' + videoData.fileName + videoData.extension + '" data-domain="' + videoData.d + '"></a>';
 };
 
 vd.createDownloadSection = function(videoData, chromeCast) {
-  // console.trace("Video size", videoData);
   var mathFloor = Math.floor(videoData.size * 100 / 1024 / 1024) / 100;
   var chromeCostString = "";
-  // console.log(">>>>>>>");
-  // console.log(chromeCast);
   if (chromeCast !== false) {
     chromeCostString = vd.getChromeCastButton(videoData);
   }
@@ -31,7 +27,6 @@ vd.createDownloadSection = function(videoData, chromeCast) {
     <div class=" clearfix"></div>\
     <div class="sep"></div>\
 </li>';
-
 };
 
 vd.removeParams = function(url) {
@@ -39,15 +34,15 @@ vd.removeParams = function(url) {
 };
 
 vd.addYoutubeInfo = function(data) {
-  // console.log("Adding youtube info for chrome");
   let fourKData = typeof data === 'string' ? JSON.parse(data) : data;
   let videoList = $("#video-list");
   let chromeCastHtml = "";
   let fourKString = '';
   let fourKDownloadUrl;
   let dButtonStr;
-  fourKDownloadUrl = "https://chrome.vidow.io/disabled";
-  dButtonStr = '<a class="btn btn-default btn33 btn-sm btn34" href="' + fourKDownloadUrl + '" target="_blank">More Info</a>';
+  // Removed server dependency - show local download option
+  fourKDownloadUrl = "#";
+  dButtonStr = '<a class="btn btn-default btn33 btn-sm btn34" href="' + fourKDownloadUrl + '" target="_blank">Download Available</a>';
   fourKString = '<li class="video" data-thumb="' + fourKData.thumbnail + '" data-link="' + fourKData.webpage_url + '" data-title="' + fourKData.title + '">' +
     '<a class="play-button" href="' + fourKData.webpage_url + '" target="_blank"></a>' +
     '<div class="title" title="' + fourKData.title + ' ' + fourKData.formatTtile + ' (' + fourKData.ext + ')">' + fourKData.title + ' ' + fourKData.formatTtile + ' (' + fourKData.ext + ')</div>' +
@@ -66,16 +61,14 @@ vd.addYoutubeInfo = function(data) {
     });
     $("#no-video-found").css('display', 'block');
   }
-  // console.log("Hiding after youtube info");
   $("#loading").hide();
   vd.showSaveForLaterButton();
 };
 
 vd.add4KLink = function(data, settings, callback) {
-  // console.log(data);
   let fourKData = typeof data === 'string' ? JSON.parse(data) : data;
   let videoList = $("#video-list");
-  let size = " Premium";
+  let size = " Free";
   let duration = 0;
   let chromeCastHtml = "";
   let fourKString = '';
@@ -85,31 +78,31 @@ vd.add4KLink = function(data, settings, callback) {
     fourKData.streaming_url = fourKData.baseurl;
   }
 
-  vd.getLoginToken(function(loginToken) {
-    if (vd.is4KDataValid(fourKData) && vd.isVideoSizeValid(fourKData, settings.minVideoSize) && vd.isVideoLinkTypeValid({
-        extension: "." + fourKData.ext
-      }, videoTypes)) {
-      fourKDownloadUrl = vd.serverUrl + "video/convert?videourl=" + fourKData.webpage_url + "&format=" + fourKData.format + "&filename=" + fourKData._filename + "&lt=" + loginToken;
-      dButtonStr = '<a class="download-button btn-four-k-download four-k btn btn-sm btn33" href="' + fourKDownloadUrl + '" data-web-page="' + fourKData.webpage_url + '">Download -' + size + '</a>';
-      if (fourKData.filesize != null) {
-        size = (fourKData.filesize / 1024 / 1024).toFixed(2);
-        size = size + " MB";
-      }
-
-      if (fourKData.duration != null) {
-        duration = Math.round(fourKData.duration / 60);
-        duration = duration + " Mins";
-      }
-
-      if (settings.chromeCast !== false) {
-        chromeCastHtml = vd.getChromeCastButton(fourKData);
-      }
-
-      fourKString = '<li class="video" data-thumb="' + fourKData.thumbnail + '" data-link="' + fourKData.webpage_url + '" data-title="' + fourKData.title + '"><a class="play-button" href="' + fourKData.webpage_url + '" target="_blank"></a><div class="title" title="' + fourKData.title + ' ' + fourKData.formatTtile + ' (' + fourKData.ext + ')">' + fourKData.title + ' ' + fourKData.formatTtile + ' (' + fourKData.ext + ')</div><div class="video_list_R">' + chromeCastHtml + dButtonStr + '</div><div class=" clearfix"></div><div class="sep"></div></li>';
-      videoList.prepend(fourKString);
+  // Removed login token requirement
+  if (vd.is4KDataValid(fourKData) && vd.isVideoSizeValid(fourKData, settings.minVideoSize) && vd.isVideoLinkTypeValid({
+      extension: "." + fourKData.ext
+    }, videoTypes)) {
+    // Removed server dependency - direct download
+    fourKDownloadUrl = fourKData.streaming_url || fourKData.url;
+    dButtonStr = '<a class="download-button btn-four-k-download four-k btn btn-sm btn33" href="' + fourKDownloadUrl + '" data-web-page="' + fourKData.webpage_url + '">Download -' + size + '</a>';
+    if (fourKData.filesize != null) {
+      size = (fourKData.filesize / 1024 / 1024).toFixed(2);
+      size = size + " MB";
     }
-    callback();
-  });
+
+    if (fourKData.duration != null) {
+      duration = Math.round(fourKData.duration / 60);
+      duration = duration + " Mins";
+    }
+
+    if (settings.chromeCast !== false) {
+      chromeCastHtml = vd.getChromeCastButton(fourKData);
+    }
+
+    fourKString = '<li class="video" data-thumb="' + fourKData.thumbnail + '" data-link="' + fourKData.webpage_url + '" data-title="' + fourKData.title + '"><a class="play-button" href="' + fourKData.webpage_url + '" target="_blank"></a><div class="title" title="' + fourKData.title + ' ' + fourKData.formatTtile + ' (' + fourKData.ext + ')">' + fourKData.title + ' ' + fourKData.formatTtile + ' (' + fourKData.ext + ')</div><div class="video_list_R">' + chromeCastHtml + dButtonStr + '</div><div class=" clearfix"></div><div class="sep"></div></li>';
+    videoList.prepend(fourKString);
+  }
+  callback();
 };
 
 vd.on4KDataReceived = function(result, settings, callback) {
@@ -125,33 +118,22 @@ vd.getValidYtLink = function(links) {
       return true
     }
   });
-  // console.log(validLink);
   return validLink;
 };
 
 vd.createDownloadSection4KVideo = function(videoPageUrl, settings, callback) {
   console.log("Creating 4K link");
-  // $("#video-list").append('<li class="loader22"> <img  style="height:60px"  src="https://cdn.dribbble.com/users/225707/screenshots/2958729/attachments/648705/straight-loader.gif"  alt=""/></li>');
-  // console.log("Not chrome");
   let urlId = md5(videoPageUrl);
   vd.getStored4KData(urlId).then((videoData) => {
-    // console.log("Stored 4k data", videoData);
     vd.is4KDataExpired(videoData, function(expired) {
-      // console.log("Expired", expired);
       if (videoData && !expired) {
-        // console.log("4k data not expried");
         let fourKData = videoData.value;
         vd.add4KLink(fourKData, settings, callback);
       } else {
         vd.removeStored4KData(urlId).then(() => {
           vd.get4KData(videoPageUrl, function(result) {
-            // console.log(videoPageUrl);
-            //  result = vd.convertToJson(result);
-            // console.log("Received fourk data", result);
             if (!result) {
               vd.removeStored4KData(urlId).then(callback);
-              // localStorage.removeItem(urlId);
-              // callback();
               return;
             }
             result.tabUrl = videoPageUrl;
@@ -163,7 +145,6 @@ vd.createDownloadSection4KVideo = function(videoPageUrl, settings, callback) {
     });
   });
 };
-
 
 vd.onVideoListChanged = function() {
 
@@ -194,13 +175,10 @@ vd.showSaveForLaterButton = function() {
 
 vd.changeSaveVideoBtnStatus = function(enable) {
   let faBookmark = $(".fa-bookmark");
-  // let saveButton = $(".btn-save-video");
   if (!enable) {
     faBookmark.css('color', '#ff0b46');
-    // saveButton.prop('disabled', true);
   } else {
     faBookmark.css('color', '#555');
-    // saveButton.prop('disabled', false);
   }
 };
 
@@ -210,94 +188,47 @@ vd.showSaveVideoLoading = function() {
 };
 
 vd.hideSaveVideoLoading = function() {
-  // console.log("Hiding loading");
   $(".fa-bookmark").show();
   $("#loading2").hide();
 };
 
+// Removed server-dependent save functionality - now uses local storage only
 vd.saveVideoForLater = function(video) {
-  $.ajax({
-    type: "POST",
-    url: vd.serverUrl + "video_list/add_video",
-    data: video,
-    success: function(response) {
-      response = vd.convertToJson(response);
-      if (!response.status && response.statusDescription === "Login required") {
-        vd.autoLogin(function(response) {
-          if (response.status) {
-            vd.saveVideoForLater(video);
-          } else {
-            window.open(vd.serverUrl + "login", "_blank");
-          }
-        });
-        return
-      } else if (!response.status && response.statusDescription === "Subscription required") {
-        window.open(vd.serverUrl + "pricing", "_blank");
-        return;
-      }
-      let videoSavedSuccessfully = response.status === 1;
-      vd.changeSaveVideoBtnStatus(!videoSavedSuccessfully);
-      vd.hideSaveVideoLoading();
-      $('.btn-save-video').attr('data-video-id', response.video.id);
-      savedVideos[response.video.id] = response.video;
-      vd.sendMessage({
-        message: "add-saved-video",
-        video: response.video
-      });
-    },
-    error: function(jqXHR, textStatus, errorThrown) {
-      // console.log(jqXHR, textStatus, errorThrown);
-      vd.saveVideoForLater(video);
+  // Save locally only
+  vd.getStorage(vd.storageKeys.savedVideos).then(savedVideos => {
+    if (!savedVideos) {
+      savedVideos = {};
     }
-  })
+    video.id = video.md5; // Use md5 as ID
+    savedVideos[video.md5] = video;
+    vd.setStorage(vd.storageKeys.savedVideos, savedVideos).then(() => {
+      vd.changeSaveVideoBtnStatus(false);
+      vd.hideSaveVideoLoading();
+      $('.btn-save-video').attr('data-video-id', video.id);
+    });
+  });
 };
 
 vd.deleteSavedVideo = function(id) {
   vd.showSaveVideoLoading();
-  vd.getLoginToken(function(loginToken) {
-    let deleteSavedVideoFinal = function() {
+  // Delete locally only
+  vd.getStorage(vd.storageKeys.savedVideos).then(savedVideos => {
+    if (savedVideos && savedVideos[tabUrlMd5]) {
       delete savedVideos[tabUrlMd5];
-      vd.sendMessage({
-        message: "remove-saved-video",
-        tabUrlMd5: tabUrlMd5
+      vd.setStorage(vd.storageKeys.savedVideos, savedVideos).then(() => {
+        vd.changeSaveVideoBtnStatus(true);
+        $('.btn-save-video').attr('data-video-id', '');
+        vd.hideSaveVideoLoading();
       });
-      vd.changeSaveVideoBtnStatus(true);
-      $('.btn-save-video').attr('data-video-id', '');
-      vd.hideSaveVideoLoading();
-    };
-    $.post(vd.serverUrl + "video_list/delete_video", {
-      id: parseInt(id),
-      lt: loginToken
-    }, function(response) {
-      response = vd.convertToJson(response);
-      if (!response.status) {
-        if (response.statusDescription === "Login required") {
-          // console.log("About to do auto login");
-          vd.autoLogin(function(response) {
-            // console.log("Auto login response");
-            // console.log(response);
-            if (response.status) {
-              deleteSavedVideoFinal();
-            } else {
-              window.open(vd.serverUrl + "login", "_blank");
-            }
-          });
-        } else if (response.statusDescription === "Subscription required") {
-          window.open(vd.serverUrl + "pricing", "_blank");
-        }
-        return
-      }
-      deleteSavedVideoFinal();
-    });
+    }
   });
-
 };
 
+// Removed login-dependent UI functions - all users have full access
 vd.initializeLoggedInUI = function(items) {
   var myAccountBtn = $(".myaccount");
-  // console.log(myAccountBtn);
-  myAccountBtn.show();
-  (vd.version !== "FREE" && items.upgraded === 'false') ? vd.initializeNotUpgradedUI(items): vd.initializeUpgradedUI(items);
+  myAccountBtn.hide(); // Hide account button since no login needed
+  vd.initializeUpgradedUI(items); // All users get upgraded UI
 };
 
 vd.initializeUpgradedUI = function(items) {
@@ -305,29 +236,26 @@ vd.initializeUpgradedUI = function(items) {
     $('.video_type[value="' + val + '"]').attr('checked', 'checked');
   });
   var upgradeBtn = $(".upgrade");
-  upgradeBtn.hide();
-
+  upgradeBtn.hide(); // Hide upgrade button since everything is free
 };
 
 vd.initializeNotUpgradedUI = function(items) {
-  var upgradeBtn = $(".upgrade");
-  upgradeBtn.show();
+  // This function is no longer needed since everything is free
+  vd.initializeUpgradedUI(items);
 };
+
 vd.initializeNotLoggedInUI = function(items) {
-  var upgradeBtn = $(".upgrade");
-  upgradeBtn.show();
+  // This function is no longer needed since everything is free
+  vd.initializeUpgradedUI(items);
 };
 
 vd.getSavedVideoData = function() {
-  // console.log("Checking if video is saved", tabUrlMd5);
   vd.sendMessage({
     message: "is-video-saved",
     tabUrlMd5: tabUrlMd5
   }, function(video) {
-    // console.log(video);
     if (video) {
       vd.changeSaveVideoBtnStatus(false);
-      // console.log(video);
       $('.btn-save-video').attr('data-video-id', video.id);
     }
     vd.hideSaveVideoLoading();
@@ -335,8 +263,6 @@ vd.getSavedVideoData = function() {
 };
 
 vd.afterDataLoaded = function() {
-  // console.log("After downloading finished");
-  // console.trace("Hid >>>");
   let videoList = $("#video-list");
   vd.getStoredSettings(function(items) {
     let videoCount = videoList.find("li").length;
@@ -344,31 +270,25 @@ vd.afterDataLoaded = function() {
     if (videoCount) {
       vd.showSaveForLaterButton();
     }
-    if (!items.logged_in) {
-      $("#loading2").hide();
-    }
+    // Always show loading as hidden since no login needed
+    $("#loading2").hide();
     if (videoCount) {
       vd.showVideoList();
     } else {
       $("#no-video-found").css('display', 'block');
     }
-    if (!items.logged_in || (vd.version !== "FREE" && items.upgraded === 'false')) {
-      $(".my-list").hide();
-    }
+    // Always show my-list since everything is free
+    $(".my-list").show();
     vd.cleanUp4KData().then(() => {});
   });
-
 };
 
 vd.checkDownloadCount = async () => {
   let numberOfDownloads = await vd.getStorage("total_number_of_downloads");
   if ([5, 15, 30].includes(numberOfDownloads)) {
-    if (confirm("You have downloaded multiple videos with Video Downloader Plus. Please share your experience with others and make a review for us.")) {
-      // Create a new tab with the reviews URL after user confirmation
-      chrome.tabs.create({
-        url: "https://chrome.vidow.io/reviews",
-        active: false
-      });
+    if (confirm("You have downloaded multiple videos with Video Downloader Plus. Please share your experience with others and rate the extension.")) {
+      // Show a generic thank you message instead of external redirect
+      alert("Thank you for using Video Downloader Plus! Your feedback helps us improve.");
     }
   }
 };
@@ -380,70 +300,52 @@ vd.start = async () => {
   });
   let isYoutube = currentTab[0]?.url?.includes('youtube.com');
   if (isYoutube) {
-    chrome.tabs.create({
-      url: "https://chrome.vidow.io/disabled/"
-    });
-    window.close();
+    // Don't redirect to external site - show message instead
+    alert("YouTube downloading may require additional permissions. Please check the extension settings.");
     return;
   }
   let videoList = $("#video-list");
-  vd.sendMessage({
-    "message": "sync-remote-login-status"
-  }, function(loginStatusData) {
-    console.log("Remote login status >>", loginStatusData);
-    vd.getStoredSettings(function(items) {
-      // console.log("LLL");
-      // console.log(items);
-      storedSettings = items;
-      if (items.logged_in) {
-        vd.initializeLoggedInUI(items);
-      } else {
-        vd.initializeNotLoggedInUI(items);
+  // Removed remote login status sync - everything is local now
+  vd.getStoredSettings(function(items) {
+    storedSettings = items;
+    // All users get full UI since everything is free
+    vd.initializeUpgradedUI(items);
+  });
+  chrome.tabs.query({
+    active: true,
+    currentWindow: true
+  }, function(tabs) {
+    tabUrlMd5 = md5(tabs[0].url);
+    vd.sendMessage({
+      message: 'get-video-links',
+      tabId: tabs[0].id
+    }, function(tabsData) {
+      vd.videoLinks = (tabsData?.videoLinks || []);
+      if (!tabsData.url) {
+        // Keep existing behavior
       }
-    });
-    chrome.tabs.query({
-      active: true,
-      currentWindow: true
-    }, function(tabs) {
-      // console.log(tabs);
-      tabUrlMd5 = md5(tabs[0].url);
-      vd.sendMessage({
-        message: 'get-video-links',
-        tabId: tabs[0].id
-      }, function(tabsData) {
-        // console.log("tabsData", tabsData);
-        vd.videoLinks = (tabsData?.videoLinks || []);
-        if (!tabsData.url) {
-          // console.log("Hiding after video links received>>>>");
-          // vd.emptyVideoList();
-          // $("#no-video-found").css('display', 'block');
-          // $("#loading").hide();
-          // return
-        }
-        vd.emptyVideoList();
-        vd.getStoredSettings(function(items) {
-          let isLoggedInAndUpgraded = (items.logged_in && (items.upgraded !== 'false' || vd.version === "FREE"));
-          let showChromecast = items.chromeCast;
-          videoTypes = items.videoTypes;
-          vd.videoLinks.forEach(function(videoLink) {
-            if (!vd.isVideoLinkTypeValid(videoLink, items.videoTypes) || !vd.isVideoSizeValid(videoLink, items.minVideoSize)) {
-              return
-            }
-            videoList.append(vd.createDownloadSection(videoLink, showChromecast));
-          });
-          // console.log(videoList);
-          vd.getSavedVideoData();
-          if (videoList.find("li").length > 0) {
-            vd.showVideoList();
+      vd.emptyVideoList();
+      vd.getStoredSettings(function(items) {
+        // All users are considered logged in and upgraded
+        let isLoggedInAndUpgraded = true;
+        let showChromecast = items.chromeCast;
+        videoTypes = items.videoTypes;
+        vd.videoLinks.forEach(function(videoLink) {
+          if (!vd.isVideoLinkTypeValid(videoLink, items.videoTypes) || !vd.isVideoSizeValid(videoLink, items.minVideoSize)) {
+            return
           }
-          vd.createDownloadSection4KVideo(tabsData.url, {
-            chromeCast: showChromecast,
-            minVideoSize: items.minVideoSize
-          }, vd.afterDataLoaded);
-          if (!items.logged_in || (items.upgraded === 'false' && vd.version !== "FREE")) {
-            $(".my-list").hide();
-          }
+          videoList.append(vd.createDownloadSection(videoLink, showChromecast));
         });
+        vd.getSavedVideoData();
+        if (videoList.find("li").length > 0) {
+          vd.showVideoList();
+        }
+        vd.createDownloadSection4KVideo(tabsData.url, {
+          chromeCast: showChromecast,
+          minVideoSize: items.minVideoSize
+        }, vd.afterDataLoaded);
+        // Always show my-list since everything is free
+        $(".my-list").show();
       });
     });
   });
@@ -452,15 +354,15 @@ vd.start = async () => {
 $(document).ready(function() {
   let body = $('body');
   let btnUpgrade = $(".upgrade");
-  $(".my-list-a").attr('href', vd.serverUrl + "video_list");
+  // Remove external server URL
+  $(".my-list-a").attr('href', '#');
   vd.showSaveVideoLoading();
-  vd.version === "FREE" ? btnUpgrade.find(".btn-label").text("Login") : btnUpgrade.find(".btn-label").text("Upgrade");
+  // Hide upgrade button since everything is free
+  btnUpgrade.hide();
 
+  // Remove account button functionality since no login needed
   body.on('click', ".myaccount", function() {
-    let newURL = vd.serverUrl + "account";
-    chrome.tabs.create({
-      url: newURL
-    });
+    alert("Account management is not needed - this extension is completely free!");
   });
 
   $('#go-to-options').on('click', function() {
@@ -471,11 +373,9 @@ $(document).ready(function() {
     }
   });
 
+  // Remove upgrade functionality since everything is free
   $('.upgrade').on('click', function() {
-    var newURL = vd.version === "FREE" ? vd.serverUrl + "account" : vd.serverUrl + "pricing";
-    chrome.tabs.create({
-      url: newURL
-    });
+    alert("Everything is already free! No upgrade needed.");
   });
 
   body.on('click', '.btn-save-video', function(e) {
@@ -498,10 +398,8 @@ $(document).ready(function() {
       thumbnail: videoElem.attr('data-thumb'),
       md5: md5(link)
     };
-    vd.getLoginToken(function(loginToken) {
-      video.lt = loginToken;
-      vd.saveVideoForLater(video);
-    });
+    // Save locally without login token
+    vd.saveVideoForLater(video);
   });
 
   body.on('click', '.btn-instant-download', function(e) {
@@ -515,53 +413,24 @@ $(document).ready(function() {
     });
   });
 
+  // Removed server-dependent 4K download functionality
   body.on('click', '.btn-four-k-download', function(e) {
     e.preventDefault();
-    let videoUrl = $(this).data('web-page');
-    $.post(vd.serverUrl + "video", {
-      videoUrl: videoUrl
-    }, function(response) {
-      response = vd.convertToJson(response);
-      if (!response.status) {
-        return
-      }
-      var downloadPageUrl = vd.serverUrl + "video/download/?id=" + response.data;
-      // console.log(downloadPageUrl);
-      chrome.tabs.create({
-        url: encodeURI(downloadPageUrl)
+    // Direct download without server processing
+    let url = $(this).attr('href');
+    if (url && url !== '#') {
+      vd.sendMessage({
+        message: 'download-video-link',
+        url: url,
+        fileName: $(this).data('title') || 'video'
       });
-
-    });
+    }
   });
 
+  // Removed server-dependent cast functionality
   body.on('click', '.cast-button', function(e) {
     e.preventDefault();
-    let link = $(this);
-    var url = link.attr('href');
-    var title = link.data('title');
-    var thumb = link.data('thumb');
-    var siteDomain = link.data('domain');
-    // url = encodeURI(url).re
-    thumb = (thumb && thumb !== "undefined") ? thumb : null;
-    title = (title && title !== "undefined") ? title : null;
-    siteDomain = (siteDomain && siteDomain !== "undefined") ? siteDomain : null;
-    $.post(vd.serverUrl + "chrome_cast", {
-      videoCastUrl: url,
-      videoTitle: title,
-      videoThumb: thumb,
-      siteDomain: siteDomain
-    }, function(response) {
-      response = vd.convertToJson(response);
-      if (!response.status) {
-        return
-      }
-      var castPlayerUrl = vd.serverUrl + "chrome_cast/play/?id=" + response.data;
-      // console.log(castPlayerUrl);
-      chrome.tabs.create({
-        url: encodeURI(castPlayerUrl)
-      });
-
-    });
+    alert("Chromecast functionality requires server support. Direct download is available instead.");
   });
 
   vd.start().then(() => {});

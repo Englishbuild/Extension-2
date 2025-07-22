@@ -3,9 +3,8 @@ importScripts('common.js', "md5.min.js");
 chrome.runtime.onInstalled.addListener(function(details) {
   // Check if the reason for the event is 'install'
   if (details.reason === "install") {
-    chrome.tabs.create({
-      url: 'https://chrome.vidow.io/installed/'
-    });
+    // Removed external redirect - extension is now self-contained
+    console.log("Video Downloader Plus installed successfully!");
   }
 });
 
@@ -378,71 +377,27 @@ vd.on4KDataReceived = function(fourKData, tab) {
   // let fourKData = typeof result === 'string' ? JSON.parse(result) : result;
   fourKData.tabUrl = tab.url;
   vd.getStoredSettings(function(items) {
-    let isLoggedInAndUpgraded = (items.logged_in && items.upgraded !== 'false');
+    // All users have full access now
+    let isLoggedInAndUpgraded = true;
     // console.log("4k data", fourKData);
     if (fourKData.title && vd.isVideoLinkTypeValid({
         extension: "." + fourKData.ext
-      }, items.videoTypes) && isLoggedInAndUpgraded) {
+      }, items.videoTypes)) {
       vd.colorizeExtensionIcon(true, tab.id);
     }
   });
   vd.saveFourKData(fourKData);
 };
 
+// Removed server-dependent functions
 vd.getAllSavedVideoData = function() {
-  vd.isLoggedInAndUpgraded(function(bool) {
-    // console.log("Is logged in and upgraded", bool);
-    if (!bool && vd.version !== "FREE") {
-      return
-    }
-    fetch(vd.serverUrl + "video_list/get_all_video_data").then(response => response.json()).then(function(response) {
-      // response = vd.convertToJson(response);
-      // console.log("Get all video response", response);
-      let savedVideos = {};
-      if (!response.status) {
-        if (response.statusDescription === "Login required") {
-          vd.autoLogin(function(response) {
-            if (response.status) {
-              vd.getAllSavedVideoData();
-            }
-          });
-        }
-        return
-      }
-      // console.log("All saved video data", response);
-      response?.videos?.forEach(function(video) {
-        savedVideos[video.md5] = video;
-      });
-      vd.setStorage(vd.storageKeys.savedVideos, savedVideos).then(() => {});
-    });
-  });
+  // Local storage only - no server communication
+  console.log("Using local storage only - no server communication needed");
 };
 
 vd.getSavedVideoData = function(md5) {
-  fetch(vd.serverUrl + "video_list/get_saved_video?unique_id=" + md5).then((response) => {
-    response.json()
-  }).then(function(response) {
-    response = vd.convertToJson(response);
-    if (!response.status) {
-      if (response.statusDescription === "Login required") {
-        vd.autoLogin(function(response) {
-          if (response.status) {
-            vd.vd.getSavedVideoData(md5);
-          }
-        });
-      }
-      return
-    }
-    vd.getStorage(vd.storageKeys.savedVideos).then(savedVideos => {
-      if (!savedVideos) {
-        savedVideos = {};
-      }
-      response.videos.forEach(function(video) {
-        savedVideos[video.md5] = video;
-      });
-      vd.setStorage(vd.storageKeys.savedVideos, savedVideos);
-    });
-  });
+  // Local storage only - no server communication
+  console.log("Using local storage only - no server communication needed");
 };
 
 vd.onWebPageLoaded = function(tab) {
@@ -451,41 +406,37 @@ vd.onWebPageLoaded = function(tab) {
     vd.colorizeExtensionIcon(true, tab.id);
     return true;
   }
-  vd.isLoggedInAndUpgraded(function(bool) {
-    if (!vd.bg4KVideoCheckForAllUsers && !bool) {
-      return
-    }
-    if (vd.requestedUrlInfo[tab.url]) {
-      return;
-    }
-    vd.requestedUrlInfo[tab.url] = 1;
-    if (chrome.runtime.lastError) {
-      // console.log("error: ", chrome.runtime.lastError);
-    }
-    let urlId = md5(tab.url);
-    vd.getStored4KData(urlId).then((fourKData) => {
-      vd.is4KDataExpired(fourKData, function(expired) {
-        // console.log("is expired", expired);
-        // console.log(fourKData);
-        if (expired) {
-          vd.get4KData(tab.url, function(data) {
-            delete vd.requestedUrlInfo[tab.url];
-            vd.on4KDataReceived(data, tab);
-          });
-        } else {
-          vd.getStoredSettings(function(items) {
-            fourKData = fourKData.value;
-            if (fourKData.title && vd.isVideoLinkTypeValid({
-                extension: "." + fourKData.ext
-              }, items.videoTypes)) {
-              vd.colorizeExtensionIcon(true, tab.id);
-            }
-          })
-        }
-      });
+  // All users can use 4K video check now
+  if (vd.requestedUrlInfo[tab.url]) {
+    return;
+  }
+  vd.requestedUrlInfo[tab.url] = 1;
+  if (chrome.runtime.lastError) {
+    console.log("error: ", chrome.runtime.lastError);
+  }
+  let urlId = md5(tab.url);
+  vd.getStored4KData(urlId).then((fourKData) => {
+    vd.is4KDataExpired(fourKData, function(expired) {
+      // console.log("is expired", expired);
+      // console.log(fourKData);
+      if (expired) {
+        vd.get4KData(tab.url, function(data) {
+          delete vd.requestedUrlInfo[tab.url];
+          vd.on4KDataReceived(data, tab);
+        });
+      } else {
+        vd.getStoredSettings(function(items) {
+          fourKData = fourKData.value;
+          if (fourKData.title && vd.isVideoLinkTypeValid({
+              extension: "." + fourKData.ext
+            }, items.videoTypes)) {
+            vd.colorizeExtensionIcon(true, tab.id);
+          }
+        })
+      }
     });
-    // let fourKData = JSON.parse(localStorage.getItem(urlId));
   });
+  // let fourKData = JSON.parse(localStorage.getItem(urlId));
 };
 
 vd.getVideoTypeFromUrl = function(link) {
@@ -526,26 +477,13 @@ vd.getVimeoDataFromServer = function(dataUrl, tab) {
   });
 };
 
+// Removed login status functions - no longer needed
 vd.getLoginStatus = async function(callback) {
-  let data = await chrome.cookies.get({
-    url: vd.serverUrl,
-    "name": "auth"
-  });
-  let loginStatus = {
-    logged_in: false,
-    upgraded: 'false'
+  // Always return logged in and upgraded status
+  return {
+    logged_in: true,
+    upgraded: true
   };
-  try {
-    loginStatus = JSON.parse(decodeURIComponent(data.value));
-    await chrome.storage.sync.set({
-      logged_in: loginStatus.logged_in,
-      upgraded: loginStatus.upgraded ? 'true' : 'false'
-    });
-    return loginStatus;
-  } catch (e) {
-    return null;
-  }
-  // console.log(loginStatus);
 };
 
 vd.fetchWithTimeout = (url, timeout) => {
@@ -570,53 +508,19 @@ vd.fetchWithTimeout = (url, timeout) => {
 };
 
 vd.syncRemoteLoginStatus = async function(callback) {
-  return new Promise(async (resolve, reject) => {
-    let t = new Date().getTime();
-    let lastCheckTime = await vd.getStorage("last_login_status_time");
-    if (lastCheckTime) {
-      lastCheckTime = parseInt(lastCheckTime);
-      // console.log(lastCheckTime);
-      // console.log(vd.loginStatusCheckIntTime);
-      // console.log(lastCheckTime + vd.loginStatusCheckIntTime);
-      // console.log(t);
-      if (lastCheckTime + vd.loginStatusCheckIntTime > t) {
-        resolve(true);
-        return 0;
-      }
-    }
-    // console.time("server");
-    try {
-      // console.log("Reponse", response);
-      let response = await vd.fetchWithTimeout(vd.serverUrl + "status/" + t, vd.loginStatusCheckTimeout);
-      response = JSON.parse(atob(response));
-      // console.time("sync");
-      // console.log(response);
-      await chrome.storage.sync.set({
-        logged_in: response.logged_in,
-        upgraded: response.upgraded ? 'true' : 'false'
-      });
-      let lastCheckTime = new Date().getTime();
-      await vd.setStorage("last_login_status_time", lastCheckTime.toString());
-      resolve(true)
-    } catch (e) {
-      console.log("Error", e);
-      resolve(false);
-    }
+  // No remote sync needed - always return success
+  return new Promise((resolve) => {
+    resolve(true);
   });
 };
 
 vd.syncData = async function() {
-  // console.log("Syncing data");
-  vd.getAllSavedVideoData();
-  await vd.getLoginStatus();
+  // Local only - no server sync needed
+  console.log("Extension is now fully offline - no server sync needed");
 };
 
-vd.syncData().then(() => {});
-
-setInterval(async function() {
-  // console.log("Getting saved video data");
-  await vd.syncData();
-}, 30000);
+// Remove the sync interval since we don't need server communication
+// setInterval removed
 
 vd.getStoredSettings(function(items) {
   minVideoSize = items.minVideoSize
@@ -734,10 +638,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       minVideoSize = request.minVideoSize;
       break;
     case "sync-remote-login-status":
-      (async () => {
-        let synced = await vd.syncRemoteLoginStatus();
-        sendResponse(synced);
-      })();
+      // Always return success since we're offline now
+      sendResponse(true);
       break;
   }
   return true;

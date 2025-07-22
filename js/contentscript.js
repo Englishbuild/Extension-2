@@ -170,31 +170,19 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   }
 });
 
+// Removed login button functionality since no authentication is needed
 if (document.getElementById('updatebutton')) {
   var button = document.getElementById("updatebutton");
   button.addEventListener("click", function() {
-    //console.log(this.getAttribute('data-subscription_status'),this.getAttribute('data-login_token'));
-    chrome.storage.sync.set({
-      logged_in: true,
-      login_token: this.getAttribute('data-login_token'),
-      upgraded: this.getAttribute('data-subscription_status')
-    }, function() {
-
-    });
+    alert("No login needed - this extension is completely free!");
   }, false);
 }
 
+// Removed logout button functionality since no authentication is needed
 if (document.getElementById('logoutbutton')) {
   var button = document.getElementById("logoutbutton");
-
   button.addEventListener("click", function() {
-    chrome.storage.sync.set({
-      logged_in: false,
-      login_token: '',
-      upgraded: 'false'
-    }, function() {
-
-    });
+    alert("No logout needed - this extension is completely free!");
   }, false);
 }
 
