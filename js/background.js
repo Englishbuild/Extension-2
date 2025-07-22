@@ -314,9 +314,37 @@ vd.downloadVideoLink = function(url, fileName) {
     });
   });
 };
-vd.castVideo = function(url) {
-
-
+vd.castVideo = function(url, title, thumbnail) {
+  // Use browser's native casting API or create a casting interface
+  if ('presentation' in navigator) {
+    // Use Presentation API for casting if available
+    const presentationRequest = new PresentationRequest([url]);
+    presentationRequest.start()
+      .then(connection => {
+        console.log('Successfully cast video:', title);
+        // Send video data to cast device
+        connection.send(JSON.stringify({
+          url: url,
+          title: title || 'Video',
+          thumbnail: thumbnail
+        }));
+      })
+      .catch(error => {
+        console.log('Casting failed, opening in new tab instead:', error);
+        // Fallback: open video in new tab
+        chrome.tabs.create({
+          url: url,
+          active: false
+        });
+      });
+  } else {
+    // Fallback: open video in new tab for casting-like experience
+    console.log('Presentation API not available, opening in new tab');
+    chrome.tabs.create({
+      url: url,
+      active: false
+    });
+  }
 };
 
 vd.extractHostname = function(url) {
@@ -592,18 +620,22 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     case "get-video-links":
       vd.getVideoLinksForTab(request.tabId).then(sendResponse);
       vd.cleanTabsData();
+      return true; // Indicate async response
       break;
     case "download-video-link":
       vd.downloadVideoLink(request.url, request.fileName);
+      sendResponse({success: true});
       break;
     case "cast-video":
-      vd.castVideo(request.url);
+      vd.castVideo(request.url, request.title, request.thumbnail);
+      sendResponse({success: true});
       break;
     case "is-video-saved":
       vd.getStorage(vd.storageKeys.savedVideos).then(savedVideos => {
         let savedVideo = (savedVideos && savedVideos[request.tabUrlMd5]) ? savedVideos[request.tabUrlMd5] : null;
         sendResponse(savedVideo);
       });
+      return true; // Indicate async response
       break;
     case "add-saved-video":
       // console.log("Saving video", request.video);
@@ -614,14 +646,18 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
         savedVideos[request.video.md5] = request.video;
         vd.setStorage(vd.storageKeys.savedVideos, savedVideos).then(sendResponse);
       });
+      return true; // Indicate async response
       break;
     case "remove-saved-video":
       vd.getStorage(vd.storageKeys.savedVideos).then(savedVideos => {
         if (savedVideos && savedVideos[request.tabUrlMd5]) {
           delete savedVideos[request.tabUrlMd5];
           vd.setStorage(vd.storageKeys.savedVideos, savedVideos).then(sendResponse);
+        } else {
+          sendResponse({success: false, message: "Video not found"});
         }
       });
+      return true; // Indicate async response
       break;
     case "create-vimeo-video-links":
       if (request?.dataUrl) {
@@ -633,9 +669,11 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       if (sender.tab) {
         vd.colorizeExtensionIcon(request.activate, sender.tab.id);
       }
+      sendResponse({success: true});
       break;
     case "update-min-vid-size":
       minVideoSize = request.minVideoSize;
+      sendResponse({success: true});
       break;
     case "sync-remote-login-status":
       // Always return success since we're offline now

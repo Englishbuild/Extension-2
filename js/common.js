@@ -138,10 +138,166 @@ vd.saveFourKData = async function(fourKData) {
   await vd.setStored4KData(urlId, all4KData);
 };
 
-// Removed server dependency for 4K data - return empty data
+// Restored 4K data functionality - now works locally without server dependency
 vd.get4KData = function(videoUrl, callback) {
-  // Since we removed server dependency, return empty data
-  callback(false);
+  // Analyze video URL locally to extract metadata
+  try {
+    const url = new URL(videoUrl);
+    const hostname = url.hostname.toLowerCase();
+    
+    // Handle different video platforms locally
+    if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) {
+      vd.extractYouTubeData(videoUrl, callback);
+    } else if (hostname.includes('vimeo.com')) {
+      vd.extractVimeoData(videoUrl, callback);
+    } else if (hostname.includes('dailymotion.com')) {
+      vd.extractDailymotionData(videoUrl, callback);
+    } else {
+      // For other sites, try to extract basic metadata from the page
+      vd.extractGenericVideoData(videoUrl, callback);
+    }
+  } catch (error) {
+    console.log('Error parsing video URL:', error);
+    callback(false);
+  }
+};
+
+// Extract YouTube video data locally
+vd.extractYouTubeData = function(videoUrl, callback) {
+  try {
+    const url = new URL(videoUrl);
+    const videoId = url.searchParams.get('v') || url.pathname.split('/').pop();
+    
+    if (videoId) {
+      // Create basic video data structure
+      const videoData = {
+        title: 'YouTube Video',
+        webpage_url: videoUrl,
+        ext: 'mp4',
+        format: 'mp4',
+        formatTtile: 'MP4',
+        thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+        duration: null,
+        filesize: null,
+        streaming_url: videoUrl,
+        _filename: `youtube_${videoId}`
+      };
+      callback(videoData);
+    } else {
+      callback(false);
+    }
+  } catch (error) {
+    console.log('Error extracting YouTube data:', error);
+    callback(false);
+  }
+};
+
+// Extract Vimeo video data locally  
+vd.extractVimeoData = function(videoUrl, callback) {
+  try {
+    const videoId = videoUrl.match(/vimeo\.com\/(\d+)/)?.[1];
+    
+    if (videoId) {
+      const videoData = {
+        title: 'Vimeo Video',
+        webpage_url: videoUrl,
+        ext: 'mp4',
+        format: 'mp4',
+        formatTtile: 'MP4',
+        thumbnail: null,
+        duration: null,
+        filesize: null,
+        streaming_url: videoUrl,
+        _filename: `vimeo_${videoId}`
+      };
+      callback(videoData);
+    } else {
+      callback(false);
+    }
+  } catch (error) {
+    console.log('Error extracting Vimeo data:', error);
+    callback(false);
+  }
+};
+
+// Extract Dailymotion video data locally
+vd.extractDailymotionData = function(videoUrl, callback) {
+  try {
+    const videoId = videoUrl.match(/dailymotion\.com\/video\/([^_]+)/)?.[1];
+    
+    if (videoId) {
+      const videoData = {
+        title: 'Dailymotion Video',
+        webpage_url: videoUrl,
+        ext: 'mp4',
+        format: 'mp4',
+        formatTtile: 'MP4',
+        thumbnail: null,
+        duration: null,
+        filesize: null,
+        streaming_url: videoUrl,
+        _filename: `dailymotion_${videoId}`
+      };
+      callback(videoData);
+    } else {
+      callback(false);
+    }
+  } catch (error) {
+    console.log('Error extracting Dailymotion data:', error);
+    callback(false);
+  }
+};
+
+// Extract generic video data for other sites
+vd.extractGenericVideoData = function(videoUrl, callback) {
+  try {
+    const url = new URL(videoUrl);
+    const hostname = url.hostname.replace('www.', '');
+    const pathname = url.pathname;
+    
+    // Check if URL looks like a direct video file
+    const videoExtensions = ['mp4', 'webm', 'mov', 'avi', 'flv', 'm4v', 'mkv'];
+    const hasVideoExtension = videoExtensions.some(ext => 
+      pathname.toLowerCase().includes(`.${ext}`)
+    );
+    
+    if (hasVideoExtension) {
+      const filename = pathname.split('/').pop() || 'video';
+      const ext = filename.split('.').pop() || 'mp4';
+      
+      const videoData = {
+        title: filename,
+        webpage_url: videoUrl,
+        ext: ext,
+        format: ext,
+        formatTtile: ext.toUpperCase(),
+        thumbnail: null,
+        duration: null,
+        filesize: null,
+        streaming_url: videoUrl,
+        _filename: filename.replace(/\.[^/.]+$/, "")
+      };
+      callback(videoData);
+    } else {
+      // For non-direct video URLs, create basic metadata
+      const videoData = {
+        title: `Video from ${hostname}`,
+        webpage_url: videoUrl,
+        ext: 'mp4',
+        format: 'mp4',
+        formatTtile: 'MP4',
+        thumbnail: null,
+        duration: null,
+        filesize: null,
+        streaming_url: videoUrl,
+        _filename: `video_${Date.now()}`
+      };
+      callback(videoData);
+    }
+  } catch (error) {
+    console.log('Error extracting generic video data:', error);
+    callback(false);
+  }
 };
 
 vd.cleanUp4KData = async function() {

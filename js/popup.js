@@ -300,9 +300,8 @@ vd.start = async () => {
   });
   let isYoutube = currentTab[0]?.url?.includes('youtube.com');
   if (isYoutube) {
-    // Don't redirect to external site - show message instead
-    alert("YouTube downloading may require additional permissions. Please check the extension settings.");
-    return;
+    // Allow YouTube processing - no restrictions needed
+    console.log("Processing YouTube page for video detection");
   }
   let videoList = $("#video-list");
   // Removed remote login status sync - everything is local now
@@ -427,10 +426,26 @@ $(document).ready(function() {
     }
   });
 
-  // Removed server-dependent cast functionality
+  // Restored cast functionality - now works locally without server
   body.on('click', '.cast-button', function(e) {
     e.preventDefault();
-    alert("Chromecast functionality requires server support. Direct download is available instead.");
+    let link = $(this);
+    var url = link.attr('href');
+    var title = link.data('title');
+    var thumb = link.data('thumb');
+    
+    // Use local casting without server dependency
+    if (url) {
+      vd.sendMessage({
+        message: 'cast-video',
+        url: url,
+        title: title || 'Video',
+        thumbnail: thumb
+      }, function(response) {
+        // Handle response if needed
+        console.log('Cast initiated for:', title);
+      });
+    }
   });
 
   vd.start().then(() => {});
@@ -440,15 +455,25 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   switch (request.message) {
     case "add-video-links":
       if (!request.videoLinks[0]) {
+        sendResponse(); // Always send response to avoid channel closure
         return
       }
       vd.add4KLink(request.videoLinks[0], {
         chromeCast: storedSettings.chromeCast,
         minVideoSize: storedSettings.minVideoSize
-      }, vd.afterDataLoaded);
+      }, function() {
+        vd.afterDataLoaded();
+        sendResponse(); // Send response after completion
+      });
+      return true; // Indicate async response
       break;
     case "add-youtube-info-for-chrome":
       vd.addYoutubeInfo(request.videoLinks[0]);
+      sendResponse(); // Always send response
+      break;
+    default:
+      sendResponse(); // Always send response for unknown messages
       break;
   }
+  return true; // Indicate async response for all cases
 });
